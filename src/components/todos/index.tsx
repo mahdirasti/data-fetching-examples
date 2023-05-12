@@ -1,77 +1,80 @@
-import * as React from "react"
+import * as React from "react";
 
-import TodoList from "./list"
+import TodoList from "./list";
 
 export interface ITodo {
-  completed: boolean
-  id: number
-  title: string
-  userId?: number
-  userName?: string
+  completed: boolean;
+  id: number;
+  title: string;
+  userId?: number;
+  userName?: string;
 }
 
 interface ITodosListProps {}
 
-const PERSONS = ["Mahdi", "Mamz", "Mohamamdreza"]
+const PERSONS = ["Mahdi", "Mamz", "Mohamamdreza"];
 
 const TodosList: React.FunctionComponent<ITodosListProps> = (props) => {
   //State for storing todos
-  const [todos, setTodos] = React.useState<ITodo[]>([])
+  const [todos, setTodos] = React.useState<ITodo[]>([]);
 
   //Method for fetching
   const fetchData = async () => {
-    let data
+    let data;
     try {
-      const response = await fetch("https://jsonplaceholder.typicode.com/todos")
-      data = await response.json()
-      setTodos(data)
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/todos"
+      );
+      data = await response.json();
+      setTodos(data);
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
-    return data
-  }
+    return data;
+  };
 
   React.useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   //Target items
   const targetItems = todos
     .filter((_, index) => index < 10)
     .map((todo) => {
-      const userName = PERSONS[Math.floor(Math.random() * 3)]
+      const userName = PERSONS[Math.floor(Math.random() * 3)];
       return {
         id: todo.id,
-        title: `${todo.title} Assigned to ${userName}`,
+        title: `${todo.title} - Assigned to ==> ${userName}`,
         completed: todo.completed,
-        userName
-      }
+        userName,
+      };
     })
     .map((todo) => ({
-      ...todo
-    }))
+      ...todo,
+    }));
 
   //Find less person tasks
   const findPersonWithSmallestWork = React.useCallback(() => {
-    let smallestPersonTask: any = {}
+    let persons: string[] = [];
+    let smallestPersonTask: any = {};
     for (let person of PERSONS) {
-      const personTasks = targetItems.filter((item) => item.userName === person)
-      smallestPersonTask[person] = personTasks.length
+      const personTasks = targetItems.filter(
+        (item) => item.userName === person
+      );
+      smallestPersonTask[person] = personTasks.length;
     }
-
     const findSmallestTask = Math.min(
-      ...Object.values(smallestPersonTask).map((item) => item as number)
-    )
-
+      ...Object.values(smallestPersonTask as number[])
+    );
     for (let person of PERSONS) {
       if (smallestPersonTask[person] === findSmallestTask) {
-        return person
+        persons.push(person);
       }
     }
-    return null
-  }, [targetItems])
+    return persons;
+  }, [targetItems]);
 
-  const luckiestPerson = findPersonWithSmallestWork()
+  const luckiestPerson = findPersonWithSmallestWork();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
@@ -82,7 +85,7 @@ const TodosList: React.FunctionComponent<ITodosListProps> = (props) => {
       <div className="todo-status">
         <h2>Todo Status</h2>
         <div>
-          <div>Items: {targetItems.length}</div>
+          <div style={{ margin: "30px 0" }}>Items: {targetItems.length}</div>
         </div>
         <div
           className="persons"
@@ -90,19 +93,21 @@ const TodosList: React.FunctionComponent<ITodosListProps> = (props) => {
             display: "flex",
             gap: 8,
             flexDirection: "column",
-            marginTop: 8
+            marginTop: 8,
           }}
         >
           {PERSONS.map((person) => {
             //Total person task
             const totalPersonTask = targetItems.filter(
               (item) => item.userName === person
-            )
+            );
 
             return (
               <div key={person.toLocaleLowerCase()} className="person">
-                {`${person} - ${totalPersonTask.length}`}
-                {luckiestPerson === person ? (
+                <span
+                  style={{ padding: "10px", border: "1px solid" }}
+                >{`*-* ${person} - ${totalPersonTask.length} `}</span>
+                {luckiestPerson?.includes(person) ? (
                   <span style={{ background: "yellow", marginLeft: 8 }}>
                     Luckiest
                   </span>
@@ -111,12 +116,12 @@ const TodosList: React.FunctionComponent<ITodosListProps> = (props) => {
                   <TodoList items={totalPersonTask} />
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TodosList
+export default TodosList;
